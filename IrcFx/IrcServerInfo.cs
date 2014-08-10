@@ -14,12 +14,12 @@ namespace IrcFx
 	/// <summary>
 	/// Description of MyClass.
 	/// </summary>
-	public class ServerInfo
+	public class IrcServerInfo
 	{
 		public String Name{get; private set;}
 		public int Port{get;private set;}
 		public String Password{get; private set;}
-		public ServerInfo(string name,int port,string password)
+		public IrcServerInfo(string name,int port,string password)
 		{
 			Name=name;
 			Port=port;

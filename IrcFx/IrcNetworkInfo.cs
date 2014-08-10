@@ -15,26 +15,26 @@ namespace IrcFx
 	/// <summary>
 	/// Description of NetworkInfo.
 	/// </summary>
-	public class NetworkInfo
+	public class IrcNetworkInfo
 	{
 		public String NetworkName{get; private set;}
-		List<ServerInfo> ServerList=new List<ServerInfo>();
+		List<IrcServerInfo> ServerList=new List<IrcServerInfo>();
 		int currentServer=0;
 		int currentIPAddress=0;
-		public NetworkInfo(String Name)
+		public IrcNetworkInfo(String Name)
 		{
 		NetworkName=Name;
 		}
-		public void AddServer(ServerInfo Server)
+		public void AddServer(IrcServerInfo Server)
 		{
 			ServerList.Add(Server);
 		}
 		public void AddServer(String name,int port,String password)
 		{
-			ServerList.Add(new ServerInfo(name,port,password));
+			ServerList.Add(new IrcServerInfo(name,port,password));
 		}
 		
-		public ServerInfo GetServer()
+		public IrcServerInfo GetServer()
 		{
 			return ServerList[currentServer];
 		}
