@@ -69,6 +69,7 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="AnotherTest.cs" />
     <Compile Include="IrcChannelNames.cs" />
     <Compile Include="IrcISupport.cs" />
     <Compile Include="IrcNetworkInfo.cs" />
@@ -78,7 +79,6 @@
     <Compile Include="IrcMessage.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="IrcUser.cs" />
-    <Compile Include="TestFile.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <ProjectExtensions>

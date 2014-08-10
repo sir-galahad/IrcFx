@@ -45,14 +45,14 @@ namespace IrcFx
 	public event UserNickChangedHandler OnUserNickChange;
 	public Boolean LocalEcho=true;
 	IrcUser User;
-	NetworkInfo Network;
+	IrcNetworkInfo Network;
 	Socket Connection;
 	Thread ReaderThread;
 	public Boolean Connected{get; private set;}
 	Queue<IrcMessage> SendQueue=new Queue<IrcMessage>();
 	Dictionary<String,IrcChannelNames> channels=new Dictionary<string, IrcChannelNames>();
 	public IrcISupport support{get;private set;}
-	public IrcSession(IrcUser user,NetworkInfo net)
+	public IrcSession(IrcUser user,IrcNetworkInfo net)
 	{
 		User=user;
 		Network=net;

@@ -27,7 +27,7 @@ namespace Sample
 			
 			Console.WriteLine("Welcome to sIRC");
 			Console.WriteLine("This progam is intended to be an example of how to use IrcFx");
-			NetworkInfo mynet=new NetworkInfo("bleh");
+			IrcNetworkInfo mynet=new IrcNetworkInfo("bleh");
 			mynet.AddServer("irc.freenode.net",6667,"double9");
 			IrcUser me=new IrcUser("Aaron H Davis","gala","galah","Sir_galahad","bleh");
 			mySession=new IrcSession(me,mynet);
