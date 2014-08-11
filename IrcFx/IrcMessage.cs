@@ -162,6 +162,11 @@ namespace IrcFx
 		{
 			String[] args=new String[2];
 			args[0]=target;
+			//make sure emoticons or other one word strings starting with ':' don't get interpreted wrongly
+			//(IRC uses " :" to denote a multi word string)
+			if(text[0]==':'){
+				text=text+" ";
+			}
 			args[1]=text;
 			return new IrcMessage("PRIVMSG",args);
 		}

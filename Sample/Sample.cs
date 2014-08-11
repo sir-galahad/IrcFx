@@ -136,6 +136,7 @@ namespace Sample
 					break;
 				default:
 					if(input[0]=='/'){break;}
+					//if(input[0]==':')
 					mySession.Msg(channel,input);
 					break;
 			}
