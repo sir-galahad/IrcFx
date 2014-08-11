@@ -15,8 +15,8 @@ namespace Sample
 	{
 		IrcSession mySession;
 		//string channel="##csharp";
-		//string channel="##programming";
-		string channel="##testroom";
+		string channel="##programming";
+		//string channel="##testroom";
 		public static void Main(string[] args)
 		{
 			Sample client=new Sample();
@@ -45,6 +45,7 @@ namespace Sample
 			                                                                                    mySession.GetChannelUsers(channel).Count));
 			mySession.OnUserQuit+=new UserQuitHandler((s,c,u,m)=>{Console.WriteLine("{0} quit [{1}]",u.CurrentNick,m);});
 			mySession.OnUserKicked+=new UserKicked((s,c,u,k,m)=>{Console.WriteLine("{0} kicked by {1} [{2}]",k,u,m);});
+			mySession.OnChannelModeChange+=new ChannelModeChanged( (s,c,u,m)=>{Console.WriteLine("{0} set mode to {1}",u,m);});
 			mySession.Connect();
 			if(mySession.Connected==true)
 				Console.WriteLine("Connected");

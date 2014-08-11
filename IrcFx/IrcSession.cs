@@ -26,6 +26,7 @@ namespace IrcFx
 	public delegate void UserKicked(IrcSession s,string channel, string kicker,string kickee,string message);
 	public delegate void UserQuitHandler(IrcSession s,string[] affectedChannels,IrcUser user,string message);
 	public delegate void UserNickChangedHandler(IrcSession s,string[] affectdChannels,string oldNick, string newNick);
+	public delegate void ChannelModeChanged(IrcSession s,string channel,IrcUser user, string change);
 	public enum ServerReplyCode { RPL_ISUPPORT=5, RPL_NAMREPLY=353,RPL_ENDOFNAMES=366};
 	
 	/// <summary>
@@ -33,6 +34,7 @@ namespace IrcFx
 	/// </summary>
 	public class IrcSession
 	{
+	public static string channelPrefixChars="#&!+.~";
 	public event MessageHandler OnMessage;
 	public event MessageHandler OnNotice;
 	public event ServerReplyHandler OnServerReply;
@@ -43,6 +45,7 @@ namespace IrcFx
 	public event UserQuitHandler OnUserQuit;
 	public event UserKicked OnUserKicked;
 	public event UserNickChangedHandler OnUserNickChange;
+	public event ChannelModeChanged OnChannelModeChange;
 	public Boolean LocalEcho=true;
 	IrcUser User;
 	IrcNetworkInfo Network;
@@ -51,7 +54,7 @@ namespace IrcFx
 	public Boolean Connected{get; private set;}
 	Queue<IrcMessage> SendQueue=new Queue<IrcMessage>();
 	Dictionary<String,IrcChannelNames> channels=new Dictionary<string, IrcChannelNames>();
-	public IrcISupport support{get;private set;}
+	public IrcISupport Support{get;private set;}
 	Object lockObject=new Object();
 	public IrcSession(IrcUser user,IrcNetworkInfo net)
 	{
@@ -65,7 +68,7 @@ namespace IrcFx
 	{
 		IrcMessage mesg;
 		IPEndPoint ipe;
-		support=new IrcISupport();
+		Support=new IrcISupport();
 		//have to fix this  yup yup
 		while((ipe=Network.GetIPEndPoint())!=null)
 		{
@@ -105,6 +108,8 @@ namespace IrcFx
 	public void JoinChannel(String Channel,String Key)
 		{
 			IrcMessage mesg=IrcMessage.GetJoinMessage(Channel,Key);
+			AddToSendQueue(mesg);
+			mesg=new IrcMessage("NAMES",new String[]{Channel});
 			AddToSendQueue(mesg);
 		}
 	public void LeaveChannel(String Channel,String Key)
@@ -152,7 +157,7 @@ namespace IrcFx
 					break;
 				}
 				try{
-					if(Connection.Poll(1,SelectMode.SelectRead)){
+					if(Connection.Poll(0,SelectMode.SelectRead)){
 						string text=null;
 						try{text=sreader.ReadLine();}
 						catch{
@@ -227,7 +232,7 @@ namespace IrcFx
 					user=new IrcUser(mesg.Prefix);
 					if(user.CurrentNick==this.User.CurrentNick) return;
 					if(!this.channels.ContainsKey(channelName)){
-						this.channels.Add(channelName,new IrcChannelNames(channelName));
+						this.channels.Add(channelName,new IrcChannelNames(channelName,Support));
 						this.channels[channelName].SetRecievedEndOfNames();
 					}
 					this.channels[channelName].AddName(new IrcUser(mesg.Prefix).CurrentNick);
@@ -263,7 +268,26 @@ namespace IrcFx
 					
 					break;
 				case "MODE":
-					System.Console.WriteLine(mesg.ToString());
+					user=new IrcUser(mesg.Prefix);
+					if(channelPrefixChars.Contains(new String(new char[]{mesg.Parameters[0][0]}))){
+						channelName=mesg.Parameters[0];
+						StringBuilder sb=new StringBuilder(mesg.Parameters[1]);
+						if(mesg.Parameters.Length>2){
+							sb.Append(' ');
+							sb.Append(mesg.Parameters[2]);
+							IrcNick nick=channels[channelName][mesg.Parameters[2]];
+								bool loseMode=false;
+							if(mesg.Parameters[1][0]=='-'){
+								loseMode=true;
+							}
+							nick.ModeChange(mesg.Parameters[1][1],loseMode);
+						}
+						if(OnChannelModeChange!=null){
+							OnChannelModeChange(this,channelName,user,sb.ToString());
+						}
+					}else{
+						Console.WriteLine(mesg.ToString());
+					}
 					break;
 				case "QUIT":
 					user=new IrcUser(mesg.Prefix);
@@ -308,7 +332,8 @@ namespace IrcFx
 				string[] names=mesg.Parameters[3].Split(' ');
 				channel=mesg.Parameters[2];
 				if(!channels.ContainsKey(channel) || channels[channel].ReceivedEndOfNames){
-				   	channels.Add(channel,new IrcChannelNames(channel));
+					channels.Remove(channel);
+				   	channels.Add(channel,new IrcChannelNames(channel,Support));
 				   }
 				channels[channel].AddNames(names);
 				Console.WriteLine("+1");
@@ -324,10 +349,10 @@ namespace IrcFx
 			case ServerReplyCode.RPL_ISUPPORT :
 				//String preffix
 				IrcISupport iSpt=new IrcISupport(mesg);
-				if(support["prefix"]!=null){
-					Console.WriteLine("prefix is {0}",support["prefix"]);
+				if(Support["prefix"]!=null){
+					Console.WriteLine("prefix is {0}",Support["prefix"]);
 				}
-				support=support.Merge(iSpt);
+				Support=Support.Merge(iSpt);
 				break;
 			default:
 				//Console.WriteLine(mesg.ToString());

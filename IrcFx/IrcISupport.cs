@@ -45,6 +45,7 @@ namespace IrcFx
 		public IrcISupport(IrcISupport first,IrcISupport second){
 			IrcISupport[] supportarray={first,second};
 			foreach(IrcISupport sup in supportarray){
+				if(sup==null) continue;
 				foreach(string key in sup.Options){
 					options.Add(key,sup[key]);
 				}

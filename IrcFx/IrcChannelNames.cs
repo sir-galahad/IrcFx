@@ -18,24 +18,27 @@ namespace IrcFx
 	/// </summary>
 	internal class IrcChannelNames
 	{
+		IrcISupport Support;
 		private string name;
 		private bool receivedEndOfNames=false;
 		private Dictionary<string,IrcNick> users=new Dictionary<string,IrcNick>();
-		public IrcChannelNames(String channelName)
+		public IrcChannelNames(String channelName,IrcISupport sup)
 		{
+			Support=sup;
 			name=channelName;
+			
 		}
 		public string Name{get{return name;}private set{}}
 		public bool ReceivedEndOfNames{get{return receivedEndOfNames;}private set{}}
 		public void AddName(string userName)
 		{
-			IrcNick nick=new IrcNick(userName);
+			IrcNick nick=new IrcNick(userName,Support);
 			users.Add(nick.Nick,nick);
 		}
 		public void AddNames(string[] userNames)
 		{
 			foreach(string user in userNames){
-				IrcNick nick=new IrcNick(user);
+				IrcNick nick=new IrcNick(user,Support);
 				users.Add(nick.Nick,nick);
 			}
 		}
@@ -67,12 +70,16 @@ namespace IrcFx
 		
 		public void ReplaceNick(string oldnick,string newnick){
 			if(!users.ContainsKey(oldnick)){return;}
+			IrcNick nicktoadd= new IrcNick(newnick,Support,this.users[oldnick].CurrentMode);
 			
-			StringBuilder sb=new StringBuilder();
-			sb.Append(users[oldnick].FlagCharacters);
-			sb.Append(newnick);
 			users.Remove(oldnick);
-			users.Add(newnick,new IrcNick(sb.ToString()));    
+			users.Add(newnick,nicktoadd);    
+		}
+		public IrcNick this[string name]{
+			get{
+				return users[name];
+			}
+			private set{}
 		}
 	}
 }

@@ -16,9 +16,12 @@ namespace IrcFx
 	public class IrcNick : IComparable<IrcNick>
 	{
 		static char[] legalchars=null;
-		public string RawNick{get; private set;}//raw nick will contain @/+ or any other prefixing chars
+		
 		public string Nick{get; private set;}
 		public string FlagCharacters{get;private set;}
+	 	string NickModeCharacters; //modes you would see attached to a nick like @ or +
+	 	string ModesCharacters;//modes as they show up in the MODE command like o or v
+	 	public string CurrentMode{get;private set;}
 		static IrcNick(){
 			//create our list of legal nick characters
 			legalchars=new Char[(0x7d-0x30)];
@@ -37,22 +40,62 @@ namespace IrcFx
 			}
 			return false;
 		}
-		public IrcNick(String rawNick)
+		public IrcNick(String rawNick,IrcISupport support)
 		{
+			//set up supported modes prefix string is in the form of 
+			//"(ov)@+
+			String tmp=support["prefix"]; 
+			tmp=tmp.TrimStart('('); //remove leading open paren leaving "ov)@+"
+			String [] tmps=tmp.Split(')'); //split to "ov" and "@+"
+			
+			ModesCharacters=tmps[0];
+			NickModeCharacters=tmps[1];
 			StringBuilder sbuilder=new StringBuilder();
 			RawNick=rawNick;
-			int x;
-			for(x=0;;x++){
-				if(IsLegalChar(rawNick[x])){
-					//nicks we receive from the server should only have non-legal chars before
-					//the nick proper
-					break;
-				}else{
-					sbuilder.Append(rawNick[x]);
-				}
+			int x=0;
+			if(IsLegalChar(rawNick[0])){
+				x=0;
+				CurrentMode="";
 			}
+			else{
+				x=1;
+				CurrentMode+=rawNick[0];//current mode will use the NickModeCharacters
+			}
+			
+			
 			Nick=rawNick.Substring(x);
-			FlagCharacters=sbuilder.ToString();
+		}
+		public IrcNick(string nick,IrcISupport support,string currentmode):this(nick,support){
+			CurrentMode=currentmode;
+		}
+		public void ModeChange(char modeChar,bool losesMode){
+			
+			char nickModeChar=NickModeCharacters[ModesCharacters.IndexOf(modeChar)];
+			if(losesMode==true){
+				while(CurrentMode.Contains(new String(new char[]{nickModeChar}))){
+					CurrentMode=CurrentMode.Remove(CurrentMode.IndexOf(nickModeChar),1);
+				}
+			}else{
+				if(CurrentMode.Contains(new String(new char[]{nickModeChar}))){
+				   	return;
+				}
+				CurrentMode=CurrentMode+nickModeChar;
+			}
+		}
+		public string RawNick{
+			get{
+				//char nickMod='\0';//the char that will prefix our nick will go here
+				StringBuilder sb=new StringBuilder();
+				foreach(char tmp in NickModeCharacters){
+					if(CurrentMode.Contains(new String(new char[]{tmp}))){
+						sb.Append(tmp);
+						break;
+					}
+				}
+				sb.Append(Nick);
+				return sb.ToString();
+			}
+			private set{}//raw nick will contain @/+ or any other prefixing chars
 		}
 		public int CompareTo(IrcNick other)
 		{
