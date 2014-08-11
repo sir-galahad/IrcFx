@@ -52,6 +52,7 @@ namespace IrcFx
 	Queue<IrcMessage> SendQueue=new Queue<IrcMessage>();
 	Dictionary<String,IrcChannelNames> channels=new Dictionary<string, IrcChannelNames>();
 	public IrcISupport support{get;private set;}
+	Object lockObject=new Object();
 	public IrcSession(IrcUser user,IrcNetworkInfo net)
 	{
 		User=user;
@@ -96,8 +97,8 @@ namespace IrcFx
 		
 	private void AddToSendQueue(IrcMessage mesg)
 	{
-		lock(this){
-		SendQueue.Enqueue(mesg);
+		lock(lockObject){
+			SendQueue.Enqueue(mesg);
 		}
 	}
 
@@ -145,64 +146,49 @@ namespace IrcFx
 			
 			StreamReader sreader;
 			IrcMessage bleh;
-			lock(Connection)
-			{
-				sreader=new StreamReader(new NetworkStream(Connection),Encoding.ASCII);
-
-				while(true)
-				{
-					if(ReaderThread==null){
-						break;
-					}
-					
-					try{
-					if(Connection.Poll(1,SelectMode.SelectRead))
-					{
+			sreader=new StreamReader(new NetworkStream(Connection),Encoding.ASCII);
+			while(true){
+				if(ReaderThread==null){
+					break;
+				}
+				try{
+					if(Connection.Poll(1,SelectMode.SelectRead)){
 						string text=null;
 						try{text=sreader.ReadLine();}
 						catch{
 						text=null;
 						}
-						
 						if(text==null){
 							Connection.Disconnect(true);
 							Network.ResetList();
 							//Connection.Shutdown(SocketShutdown.Both);
 							//Thread.Sleep(100);
 							break;
-						}	
-						
+						}		
 						bleh=new IrcMessage(text);
 						ReceivedMessage(bleh);
 					}
-					}catch(Exception ex){
-						Console.WriteLine(ex.Message);
-						Connected=false;
-						ReaderThread=null;
-						break;
-					}
-					Thread.Sleep(100);
-				
-					lock(this){
-					
-						while(SendQueue.Count!=0)
-						{
-							IrcMessage mesg;
-							mesg=SendQueue.Dequeue();
-							//Console.WriteLine(mesg.Command);
-							
-							try{Connection.Send(mesg.GetBytes());}
-							catch(Exception ex){
-								Console.WriteLine(ex.Message);
-								Connected=false;
-								ReaderThread=null;
-								break;
-							}
+				}catch(Exception ex){
+					Console.WriteLine(ex.Message);
+					Connected=false;
+					ReaderThread=null;
+					break;
+				}
+				Thread.Sleep(100);
+				lock(lockObject){
+					while(SendQueue.Count!=0){
+						IrcMessage mesg;
+						mesg=SendQueue.Dequeue();
+						//Console.WriteLine(mesg.Command);
+						try{Connection.Send(mesg.GetBytes());}
+						catch(Exception ex){
+							Console.WriteLine(ex.Message);
+							Connected=false;
+							ReaderThread=null;
+							break;
 						}
 					}
-					
-				}
-			
+				}				
 			}
 			OnDisconnect(this);
 		}
