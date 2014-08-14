@@ -9,14 +9,16 @@
 using System;
 using IrcFx;
 using System.Threading;
+using System.Collections.Generic;
 namespace Sample
 {
 	class Sample
 	{
 		IrcSession mySession;
 		//string channel="##csharp";
-		string channel="##programming";
-		//string channel="##testroom";
+		//string channel="##programming";
+		string channel="##testroom";
+		//string channel="##irc";
 		public static void Main(string[] args)
 		{
 			Sample client=new Sample();
@@ -119,7 +121,9 @@ namespace Sample
 					mySession.Msg(args[1],text);
 					break;
 				case "/list":
-					foreach(IrcNick nick in mySession.GetChannelUsers(channel)){
+					List<IrcNick> users=mySession.GetChannelUsers(channel);
+					if(users==null)break;
+					foreach(IrcNick nick in users){
 						Console.Write("{0} ",nick.RawNick);
 					}
 					Console.WriteLine("");

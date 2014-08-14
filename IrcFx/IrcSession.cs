@@ -109,8 +109,8 @@ namespace IrcFx
 		{
 			IrcMessage mesg=IrcMessage.GetJoinMessage(Channel,Key);
 			AddToSendQueue(mesg);
-			mesg=new IrcMessage("NAMES",new String[]{Channel});
-			AddToSendQueue(mesg);
+			//mesg=IrcMessage.GetPongMessage();
+			//AddToSendQueue(mesg);
 		}
 	public void LeaveChannel(String Channel,String Key)
 		{
@@ -144,25 +144,27 @@ namespace IrcFx
 		}
 	}
 	public List<IrcNick> GetChannelUsers(String channel){
-		return channels[channel].GetAllUsers();
+		if(channels.ContainsKey(channel)){
+			return channels[channel].GetAllUsers();
+		}
+		return null;
 	}
 	private void ReaderWriter()
 		{
 			
 			StreamReader sreader;
-			IrcMessage bleh;
+			IrcMessage mesg;
 			sreader=new StreamReader(new NetworkStream(Connection),Encoding.ASCII);
-			while(true){
-				if(ReaderThread==null){
-					break;
-				}
+			while(ReaderThread!=null){
+				
 				try{
 					if(Connection.Poll(0,SelectMode.SelectRead)){
 						string text=null;
-						try{text=sreader.ReadLine();}
+						text=sreader.ReadLine();
+						/*try{text=sreader.ReadLine();}
 						catch{
 						text=null;
-						}
+						}*/
 						if(text==null){
 							Connection.Disconnect(true);
 							Network.ResetList();
@@ -170,8 +172,8 @@ namespace IrcFx
 							//Thread.Sleep(100);
 							break;
 						}		
-						bleh=new IrcMessage(text);
-						ReceivedMessage(bleh);
+						mesg=new IrcMessage(text);
+						ReceivedMessage(mesg);
 					}
 				}catch(Exception ex){
 					Console.WriteLine(ex.Message);
@@ -182,7 +184,7 @@ namespace IrcFx
 				Thread.Sleep(100);
 				lock(lockObject){
 					while(SendQueue.Count!=0){
-						IrcMessage mesg;
+						mesg=null;
 						mesg=SendQueue.Dequeue();
 						//Console.WriteLine(mesg.Command);
 						try{Connection.Send(mesg.GetBytes());}
