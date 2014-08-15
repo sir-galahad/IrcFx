@@ -102,6 +102,7 @@ namespace IrcFx
 	{
 		lock(lockObject){
 			SendQueue.Enqueue(mesg);
+			//SendQueue.
 		}
 	}
 
@@ -111,6 +112,7 @@ namespace IrcFx
 			AddToSendQueue(mesg);
 			//mesg=IrcMessage.GetPongMessage(null,null);
 			//AddToSendQueue(mesg);
+			
 		}
 	public void LeaveChannel(String Channel,String Key)
 		{
@@ -163,7 +165,7 @@ namespace IrcFx
 						do{
 							string text=null;
 							text=sreader.ReadLine();
-							
+							//text=sreader.ReadToEnd();
 							if(text==null){
 								Connection.Disconnect(true);
 								Network.ResetList();
@@ -171,21 +173,24 @@ namespace IrcFx
 								//Thread.Sleep(100);
 								break;
 							}		
-							mesg=new IrcMessage(text);
-							ReceivedMessage(mesg);
-						}while(sreader.Peek()!=-1);
+							//string[] mesgs=text.Split("\r\n".ToCharArray());
+							//foreach(string msg in mesgs){
+								mesg=new IrcMessage(text);
+								ReceivedMessage(mesg);
+							//}
+						//}while(sreader.Peek()!=-1);
+						}while(((NetworkStream)(sreader.BaseStream)).DataAvailable);
 					}
 				}catch(Exception ex){
 					Console.WriteLine(ex.Message);
 					Connected=false;
 					ReaderThread=null;
-					//OnDisconnect(this);
 					break;
 				}
 				Thread.Sleep(100);
 				lock(lockObject){
 					while(SendQueue.Count!=0){
-						mesg=null;
+						//mesg=null;
 						mesg=SendQueue.Dequeue();
 						//Console.WriteLine(mesg.Command);
 						try{Connection.Send(mesg.GetBytes());}
