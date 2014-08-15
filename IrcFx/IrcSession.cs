@@ -109,7 +109,7 @@ namespace IrcFx
 		{
 			IrcMessage mesg=IrcMessage.GetJoinMessage(Channel,Key);
 			AddToSendQueue(mesg);
-			//mesg=IrcMessage.GetPongMessage();
+			//mesg=IrcMessage.GetPongMessage(null,null);
 			//AddToSendQueue(mesg);
 		}
 	public void LeaveChannel(String Channel,String Key)
@@ -159,26 +159,27 @@ namespace IrcFx
 				
 				try{
 					if(Connection.Poll(0,SelectMode.SelectRead)){
-						string text=null;
-						text=sreader.ReadLine();
-						/*try{text=sreader.ReadLine();}
-						catch{
-						text=null;
-						}*/
-						if(text==null){
-							Connection.Disconnect(true);
-							Network.ResetList();
-							//Connection.Shutdown(SocketShutdown.Both);
-							//Thread.Sleep(100);
-							break;
-						}		
-						mesg=new IrcMessage(text);
-						ReceivedMessage(mesg);
+						//Console.WriteLine("{0}",sreader.Peek());
+						do{
+							string text=null;
+							text=sreader.ReadLine();
+							
+							if(text==null){
+								Connection.Disconnect(true);
+								Network.ResetList();
+								//Connection.Shutdown(SocketShutdown.Both);
+								//Thread.Sleep(100);
+								break;
+							}		
+							mesg=new IrcMessage(text);
+							ReceivedMessage(mesg);
+						}while(sreader.Peek()!=-1);
 					}
 				}catch(Exception ex){
 					Console.WriteLine(ex.Message);
 					Connected=false;
 					ReaderThread=null;
+					//OnDisconnect(this);
 					break;
 				}
 				Thread.Sleep(100);
@@ -196,6 +197,11 @@ namespace IrcFx
 						}
 					}
 				}				
+				if(Connection.Connected==false){
+					Connected=false;
+					ReaderThread=null;
+					break;
+				}
 			}
 			OnDisconnect(this);
 		}

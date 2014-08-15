@@ -32,6 +32,7 @@ namespace IrcFx
 			Text+=Cmd;
 			foreach(String S in Params)
 			{
+				if(S==null)continue;
 				if(S.Contains(" ")){
 					Trailing++;
 					Text+=" :";
