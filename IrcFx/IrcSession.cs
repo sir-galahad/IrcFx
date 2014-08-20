@@ -299,6 +299,7 @@ namespace IrcFx
 					//Console.WriteLine("calling");
 					if(user.CurrentNick==User.CurrentNick){
 						Connection.Shutdown(SocketShutdown.Both);
+						if(OnDisconnect!=null){OnDisconnect(this);}
 					}
 					if(OnUserQuit!=null){
 						OnUserQuit(this,affectedChannels,user,message);
