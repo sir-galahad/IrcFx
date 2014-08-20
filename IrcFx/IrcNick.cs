@@ -50,7 +50,6 @@ namespace IrcFx
 			
 			ModesCharacters=tmps[0];
 			NickModeCharacters=tmps[1];
-			StringBuilder sbuilder=new StringBuilder();
 			RawNick=rawNick;
 			int x=0;
 			if(IsLegalChar(rawNick[0])){
@@ -61,8 +60,6 @@ namespace IrcFx
 				x=1;
 				CurrentMode+=rawNick[0];//current mode will use the NickModeCharacters
 			}
-			
-			
 			Nick=rawNick.Substring(x);
 		}
 		public IrcNick(string nick,IrcISupport support,string currentmode):this(nick,support){

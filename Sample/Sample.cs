@@ -106,8 +106,6 @@ namespace Sample
 					break;
 				case "/quit":
 					mySession.Quit("gala out!");
-					//while(mySession.Connected){Thread.Sleep(1000);}
-					//Environment.Exit(0);
 					break;
 				case "/msg":
 					if(args.Length<3){break;}

@@ -102,23 +102,17 @@ namespace IrcFx
 	{
 		lock(lockObject){
 			SendQueue.Enqueue(mesg);
-			//SendQueue.
 		}
 	}
-
 	public void JoinChannel(String Channel,String Key)
 		{
 			IrcMessage mesg=IrcMessage.GetJoinMessage(Channel,Key);
 			AddToSendQueue(mesg);
-			//mesg=IrcMessage.GetPongMessage(null,null);
-			//AddToSendQueue(mesg);
-			
 		}
-	public void LeaveChannel(String Channel,String Key)
+	public void LeaveChannel(String Channel,String message)
 		{
-			IrcMessage mesg=IrcMessage.GetLeaveMessage(Channel,null);
-				
-			
+			IrcMessage mesg=IrcMessage.GetPartMessage(Channel,message);
+			AddToSendQueue(mesg);
 		}
 		
 	public void Msg(String target,String Text)
@@ -153,15 +147,12 @@ namespace IrcFx
 	}
 	private void ReaderWriter()
 		{
-			
-			StreamReader sreader;
 			IrcMessage mesg;
-			sreader=new StreamReader(new NetworkStream(Connection),Encoding.ASCII);
 			BufferedNetworkReader breader=new BufferedNetworkReader(new NetworkStream(Connection));
 			while(ReaderThread!=null){
 				
 				try{
-					while(breader.ReadyToRead()){
+					if(breader.ReadyToRead()){
 						string text=null;
 						text=breader.ReadLine();
 						mesg=new IrcMessage(text);
@@ -173,12 +164,10 @@ namespace IrcFx
 					ReaderThread=null;
 					break;
 				}
-				Thread.Sleep(100);
+				Thread.Sleep(25);
 				lock(lockObject){
 					while(SendQueue.Count!=0){
-						//mesg=null;
 						mesg=SendQueue.Dequeue();
-						//Console.WriteLine(mesg.Command);
 						try{Connection.Send(mesg.GetBytes());}
 						catch(Exception ex){
 							Console.WriteLine(ex.Message);
@@ -212,13 +201,9 @@ namespace IrcFx
 					if(OnMessage!=null){
 						OnMessage(this,new IrcUser(mesg.Prefix),mesg.Parameters[0],mesg.Parameters[1]);
 					}
-					//Console.WriteLine(mesg);
 					break;
 				case "PING":
-					//Console.WriteLine(mesg.GetText());
-					//Console.WriteLine(mesg.Parameters[0]);
 					mesg=IrcMessage.GetPongMessage(User.UserName,mesg.Parameters[0]);
-					//Console.WriteLine(mesg.GetText());
 					AddToSendQueue(mesg);
 					break;
 				case "NOTICE":
@@ -235,7 +220,6 @@ namespace IrcFx
 						this.channels[channelName].SetRecievedEndOfNames();
 					}
 					this.channels[channelName].AddName(new IrcUser(mesg.Prefix).CurrentNick);
-					//Console.WriteLine("{0} joined {1}",new IrcUser(mesg.Prefix).CurrentNick,channelName);
 					if(OnChannelJoined!=null) OnChannelJoined(this,channelName,user);
 					break;
 				case "NICK":
@@ -252,19 +236,14 @@ namespace IrcFx
 					}
 					break;
 				case "PART":
-					//Console.WriteLine("PART");
 					user=new IrcUser(mesg.Prefix);
 					channelName=mesg.Parameters[0];
 					this.channels[channelName].RemoveName(user.CurrentNick);
 					if(mesg.Parameters.Length>1){message=mesg.Parameters[1];}
 					else{message="";}
-					
-					//Console.WriteLine("{0} left {1}",user.CurrentNick,channelName);
-					
 					if(OnChannelParted!=null){
 						OnChannelParted(this,channelName,user,message);
-					}
-					
+					}					
 					break;
 				case "MODE":
 					user=new IrcUser(mesg.Prefix);
@@ -296,14 +275,14 @@ namespace IrcFx
 					foreach(string cName in affectedChannels ){
 						channels[cName].RemoveName(user.CurrentNick);
 					}
-					//Console.WriteLine("calling");
+					if(OnUserQuit!=null){
+						OnUserQuit(this,affectedChannels,user,message);
+					}
 					if(user.CurrentNick==User.CurrentNick){
 						Connection.Shutdown(SocketShutdown.Both);
 						if(OnDisconnect!=null){OnDisconnect(this);}
 					}
-					if(OnUserQuit!=null){
-						OnUserQuit(this,affectedChannels,user,message);
-					}
+					
 					break;
 				case "KICK":
 					user=new IrcUser(mesg.Prefix);
@@ -312,7 +291,6 @@ namespace IrcFx
 					}else{
 						message="";
 					}
-					
 					channelName=mesg.Parameters[0];
 					Console.WriteLine("this far");
 					string kickee=mesg.Parameters[1];
@@ -321,7 +299,6 @@ namespace IrcFx
 						OnUserKicked(this,channelName,user.CurrentNick,kickee,message);
 					}
 					break;
-					//channels[]
 				default:
 					//Console.WriteLine(mesg.GetText());
 					break;
@@ -339,7 +316,6 @@ namespace IrcFx
 				   	channels.Add(channel,new IrcChannelNames(channel,Support));
 				   }
 				channels[channel].AddNames(names);
-				//Console.WriteLine("+1");
 				break;
 			case ServerReplyCode.RPL_ENDOFNAMES:
 				
@@ -350,7 +326,6 @@ namespace IrcFx
 				}
 				break;
 			case ServerReplyCode.RPL_ISUPPORT :
-				//String preffix
 				IrcISupport iSpt=new IrcISupport(mesg);
 				if(Support["prefix"]!=null){
 					Console.WriteLine("prefix is {0}",Support["prefix"]);

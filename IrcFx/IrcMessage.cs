@@ -151,7 +151,7 @@ namespace IrcFx
 			if(Key!=null)args[1]=Key;
 			return new IrcMessage("JOIN",args);
 		}
-		public static IrcMessage GetLeaveMessage(String Channel,String PartMessage)
+		public static IrcMessage GetPartMessage(String Channel,String PartMessage)
 		{
 			String[] args=new String[2];
 			args[0]=Channel;
