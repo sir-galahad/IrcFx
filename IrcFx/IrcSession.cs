@@ -157,6 +157,7 @@ namespace IrcFx
 			StreamReader sreader;
 			IrcMessage mesg;
 			sreader=new StreamReader(new NetworkStream(Connection),Encoding.ASCII);
+			BufferedNetworkReader breader=new BufferedNetworkReader(new NetworkStream(Connection));
 			while(ReaderThread!=null){
 				
 				try{
@@ -164,8 +165,9 @@ namespace IrcFx
 						//Console.WriteLine("{0}",sreader.Peek());
 						do{
 							string text=null;
-							text=sreader.ReadLine();
-							//text=sreader.ReadToEnd();
+							
+							//text=sreader.ReadLine();
+							text=breader.ReadLine();
 							if(text==null){
 								Connection.Disconnect(true);
 								Network.ResetList();
@@ -173,13 +175,15 @@ namespace IrcFx
 								//Thread.Sleep(100);
 								break;
 							}		
-							//string[] mesgs=text.Split("\r\n".ToCharArray());
+							//string[] mesgs=text.Split("\n\r".ToCharArray());
 							//foreach(string msg in mesgs){
 								mesg=new IrcMessage(text);
 								ReceivedMessage(mesg);
 							//}
 						//}while(sreader.Peek()!=-1);
-						}while(((NetworkStream)(sreader.BaseStream)).DataAvailable);
+						//}while(((NetworkStream)(sreader.BaseStream)).DataAvailable);
+						}while(breader.ReadyToRead());
+						       
 					}
 				}catch(Exception ex){
 					Console.WriteLine(ex.Message);
@@ -209,6 +213,7 @@ namespace IrcFx
 				}
 			}
 			OnDisconnect(this);
+			sreader.Dispose();
 		}
 	private void ReceivedMessage(IrcMessage mesg)
 		{
@@ -349,7 +354,7 @@ namespace IrcFx
 				   	channels.Add(channel,new IrcChannelNames(channel,Support));
 				   }
 				channels[channel].AddNames(names);
-				Console.WriteLine("+1");
+				//Console.WriteLine("+1");
 				break;
 			case ServerReplyCode.RPL_ENDOFNAMES:
 				

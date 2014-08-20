@@ -69,6 +69,7 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="BufferedNetworkReader.cs" />
     <Compile Include="IrcChannelNames.cs" />
     <Compile Include="IrcISupport.cs" />
     <Compile Include="IrcNetworkInfo.cs" />
