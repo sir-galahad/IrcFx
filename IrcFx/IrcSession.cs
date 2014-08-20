@@ -161,31 +161,11 @@ namespace IrcFx
 			while(ReaderThread!=null){
 				
 				try{
-					if(Connection.Poll(0,SelectMode.SelectRead)){
-						//Console.WriteLine("{0}",sreader.Peek());
-						do{
-							string text=null;
-							
-							//text=sreader.ReadLine();
-							text=breader.ReadLine();
-							if(text==null) continue;
-							/*if(text==null){
-								
-								Connection.Disconnect(true);
-								Network.ResetList();
-								//Connection.Shutdown(SocketShutdown.Both);
-								//Thread.Sleep(100);
-								break;
-							}*/		
-							//string[] mesgs=text.Split("\n\r".ToCharArray());
-							//foreach(string msg in mesgs){
-								mesg=new IrcMessage(text);
-								ReceivedMessage(mesg);
-							//}
-						//}while(sreader.Peek()!=-1);
-						//}while(((NetworkStream)(sreader.BaseStream)).DataAvailable);
-						}while(breader.ReadyToRead());
-						       
+					while(breader.ReadyToRead()){
+						string text=null;
+						text=breader.ReadLine();
+						mesg=new IrcMessage(text);
+						ReceivedMessage(mesg);
 					}
 				}catch(Exception ex){
 					Console.WriteLine(ex.Message);
@@ -215,7 +195,6 @@ namespace IrcFx
 				}
 			}
 			OnDisconnect(this);
-			sreader.Dispose();
 		}
 	private void ReceivedMessage(IrcMessage mesg)
 		{
@@ -306,7 +285,7 @@ namespace IrcFx
 							OnChannelModeChange(this,channelName,user,sb.ToString());
 						}
 					}else{
-						Console.WriteLine(mesg.ToString());
+						Console.WriteLine("*{0}*",mesg.ToString());
 					}
 					break;
 				case "QUIT":
@@ -318,6 +297,9 @@ namespace IrcFx
 						channels[cName].RemoveName(user.CurrentNick);
 					}
 					//Console.WriteLine("calling");
+					if(user.CurrentNick==User.CurrentNick){
+						Connection.Shutdown(SocketShutdown.Both);
+					}
 					if(OnUserQuit!=null){
 						OnUserQuit(this,affectedChannels,user,message);
 					}

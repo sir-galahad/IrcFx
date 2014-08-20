@@ -7,6 +7,7 @@
  * 
  */
 using System;
+using System.IO;
 using System.Net.Sockets;
 using System.Text;
 namespace IrcFx
@@ -15,10 +16,10 @@ namespace IrcFx
 	/// a simple buffered reader, because StreamReader doesn't have a non blocking way to call ReadLine()
 	/// or even a way to check if ReadLine() would block;
 	/// </summary>
-	public class BufferedNetworkReader
+	public class BufferedNetworkReader :IDisposable
 	{
 		NetworkStream NetStream;
-		byte[] buffer=new byte[512]; //should be plently as irc message can't be more than 512 bytes
+		byte[] buffer=new byte[1024]; //should be plently as irc message can't be more than 512 bytes
 		int head;
 		UTF8Encoding codec=new UTF8Encoding();
 		public BufferedNetworkReader(NetworkStream stream)
@@ -31,7 +32,7 @@ namespace IrcFx
 			return false;
 		}
 		string GetLine(){
-			byte[] temp=new byte[512];
+			byte[] temp=new byte[1024];
 			string line=codec.GetString(buffer);
 			if((line.Contains("\r\n"))){
 				line=line.Split("\r\n".ToCharArray())[0];
@@ -50,15 +51,27 @@ namespace IrcFx
 			if(line!=null){
 				return line;
 			}else{
-				if(NetStream.DataAvailable){
-					bytesread=NetStream.Read(buffer,head,512-head);
+				while(NetStream.DataAvailable){
+					bytesread=NetStream.Read(buffer,head,1024-head);
 					head=head+bytesread;
-					if(bytesread==0)return null;//server is dead to u	
-					return GetLine();
+					if(bytesread==0){
+						IOException except=new IOException("Connection seems to be closed");//server is dead to u
+						//except.Message="Connection Seems to be closed";
+						throw except;
+						
+					}
+					line=GetLine();
+					if(line==null){
+						Console.WriteLine("null line!");
+						while(true){}
+					}
+					if(line!=null)return line;
 				}
 				return null;
 			}
 		}
-
+		public void Dispose(){
+			NetStream.Dispose();
+		}
 	}
 }
