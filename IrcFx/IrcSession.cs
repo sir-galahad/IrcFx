@@ -168,6 +168,7 @@ namespace IrcFx
 							
 							//text=sreader.ReadLine();
 							text=breader.ReadLine();
+							if(text==null) continue;
 							/*if(text==null){
 								
 								Connection.Disconnect(true);
