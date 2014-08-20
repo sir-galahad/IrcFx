@@ -168,13 +168,14 @@ namespace IrcFx
 							
 							//text=sreader.ReadLine();
 							text=breader.ReadLine();
-							if(text==null){
+							/*if(text==null){
+								
 								Connection.Disconnect(true);
 								Network.ResetList();
 								//Connection.Shutdown(SocketShutdown.Both);
 								//Thread.Sleep(100);
 								break;
-							}		
+							}*/		
 							//string[] mesgs=text.Split("\n\r".ToCharArray());
 							//foreach(string msg in mesgs){
 								mesg=new IrcMessage(text);
