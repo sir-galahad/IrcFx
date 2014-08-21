@@ -16,8 +16,8 @@ namespace Sample
 	{
 		IrcSession mySession;
 		//string channel="##csharp";
-		//string channel="##programming";
-		string channel="##testroom";
+		string channel="##programming";
+		//string channel="##testroom";
 		//string channel="##irc";
 		public static void Main(string[] args)
 		{
@@ -32,22 +32,7 @@ namespace Sample
 			IrcNetworkInfo mynet=new IrcNetworkInfo("bleh");
 			mynet.AddServer("irc.freenode.net",6667,"double9");
 			IrcUser me=new IrcUser("Aaron H Davis","gala","galah","Sir_galahad","bleh");
-			mySession=new IrcSession(me,mynet);
-			mySession.OnMessage+=new MessageHandler(mesghandle);
-			mySession.OnNotice+=new MessageHandler((s,se,t,m)=>{Console.WriteLine("-*{0}*- {1}",se,m);});
-			mySession.OnServerReply+=new ServerReplyHandler(rplyhandle);
-			mySession.OnDisconnect+=new DisconnectHandler(Reconnect);
-			/*mySession.OnNamesReceived+=new NamesReceivedHandler((s,c,a)=>{
-			                                                    	foreach(IrcNick n in a){ 
-			                                                    		Console.WriteLine(n);
-			                                                    	}
-			                                                    });
-			                                                   */
-			mySession.OnChannelJoined+=new ChannelJoinedEventHandler((s,c,u)=>Console.WriteLine("{0} joined {1} ({2})",u.CurrentNick,c,
-			                                                                                    mySession.GetChannelUsers(channel).Count));
-			mySession.OnUserQuit+=new UserQuitHandler((s,c,u,m)=>{Console.WriteLine("{0} quit [{1}]",u.CurrentNick,m);});
-			mySession.OnUserKicked+=new UserKicked((s,c,u,k,m)=>{Console.WriteLine("{0} kicked by {1} [{2}]",k,u,m);});
-			mySession.OnChannelModeChange+=new ChannelModeChanged( (s,c,u,m)=>{Console.WriteLine("{0} set mode to {1}",u,m);});
+			mySession=new IrcSession(me,mynet,new SampleHandler());
 			mySession.Connect();
 			if(mySession.Connected==true)
 				Console.WriteLine("Connected");
@@ -64,37 +49,6 @@ namespace Sample
 				HandleLocalInput(bleh);
 			}
 			
-		}
-		public void mesghandle(IrcSession s,IrcUser sender,string target,string text)
-		{
-			char[] trimOut=new Char[1];
-			string cmd=null;;
-			trimOut[0]='\x0001';
-			if(text[0]==1 && text[text.Length-1]==1){
-				text=text.Trim(trimOut);
-				cmd=text.Split(' ')[0];
-				text=text.Remove(0,cmd.Length);
-				text=text.Trim();
-			}
-			if(cmd!=null && cmd=="ACTION"){
-				Console.WriteLine("*{0} {1}*",sender.CurrentNick,text);
-			}
-			else{
-				Console.WriteLine("<{0}> {1}",sender.CurrentNick,text);
-			}
-		}
-		
-		public void rplyhandle(IrcSession s,short code,string data)
-		{
-			Console.WriteLine("{1}Server: {0}",data,code);
-		}
-		
-		public void Reconnect(IrcSession s)
-		{
-			//s.Quit("nou");
-			Console.WriteLine("Press any key to continue...");
-			//Console.ReadKey();
-			Environment.Exit(0);
 		}
 		public void HandleLocalInput(string input){
 			char[] seperator=new Char[1];

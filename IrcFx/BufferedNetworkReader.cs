@@ -26,10 +26,12 @@ namespace IrcFx
 		{
 			NetStream=stream;
 		}
-		public bool ReadyToRead(){
+		public bool ReadyToRead{
+			get{
 			if(head!=0)return true;
 			if(NetStream.DataAvailable)return true;
-			return false;
+			return false;}
+			private set{}
 		}
 		string GetLine(){
 			byte[] temp=new byte[1024];
@@ -56,7 +58,6 @@ namespace IrcFx
 					head=head+bytesread;
 					if(bytesread==0){
 						IOException except=new IOException("Connection seems to be closed");//server is dead to u
-						//except.Message="Connection Seems to be closed";
 						throw except;
 						
 					}

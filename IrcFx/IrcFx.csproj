@@ -72,6 +72,8 @@
     <Compile Include="BufferedNetworkReader.cs" />
     <Compile Include="IrcChannelNames.cs" />
     <Compile Include="IrcISupport.cs" />
+    <Compile Include="IrcMessageHandlerAdapter.cs" />
+    <Compile Include="IrcMessageHandler.cs" />
     <Compile Include="IrcNetworkInfo.cs" />
     <Compile Include="IrcNick.cs" />
     <Compile Include="IrcServerInfo.cs" />
