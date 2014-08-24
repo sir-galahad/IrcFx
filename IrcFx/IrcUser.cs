@@ -19,11 +19,12 @@ namespace IrcFx
 		public String RealName{get; private set;}
 		public String UserName{get; private set;}
 		public String[] NickNames{get;private set;}
-		
+		int NickNumber=0;
 		public IrcUser(String realName,String userName,String nick1,String nick2,String nick3)
 		{
 			RealName=realName;
 			UserName=userName;
+			
 			NickNames=new String[3];
 			NickNames[0]=nick1;
 			NickNames[1]=nick2;
@@ -40,8 +41,13 @@ namespace IrcFx
 			NickNames[0]=data[0];
 			CurrentNick=NickNames[0];
 		}
-		
-		
+		public string GetNextNick(){
+			if(NickNumber>=NickNames.Length){
+				return null;
+			}
+			Console.WriteLine(NickNames[NickNumber]);
+			return NickNames[NickNumber++];
+		}
 		public override string ToString()
 		{
 			return CurrentNick;

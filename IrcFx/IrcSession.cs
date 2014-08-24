@@ -15,7 +15,7 @@ using System.Text;
 using System.Threading;
 namespace IrcFx
 {
-	public enum ServerReplyCode {RPL_WELCOME=1, RPL_ISUPPORT=5, RPL_NAMREPLY=353,RPL_ENDOFNAMES=366};
+	public enum ServerReplyCode {RPL_WELCOME=1, RPL_ISUPPORT=5, RPL_NAMREPLY=353,RPL_ENDOFNAMES=366,ERR_NOTREGISTERED=451};
 	
 	/// <summary>
 	/// IrcSession is the class responsible for implementing the IRC protocol
@@ -55,23 +55,32 @@ namespace IrcFx
 			catch{
 				continue;
 			}
-			this.Connected=Connection.Connected;
+			//this.Connected=Connection.Connected;
 			break;
 		}
-		
-		StreamReader reader=new StreamReader(new NetworkStream(Connection));
-		mesg=IrcMessage.GetPassMessage(Network.GetServerPassword());
-		Connection.Send(mesg.GetBytes());
-		mesg=IrcMessage.GetNickMessage(User.NickNames[0]);
-		Connection.Send(mesg.GetBytes());
-		mesg=IrcMessage.GetUserMessage(User);
-		Connection.Send(mesg.GetBytes());
 		ReaderThread=new Thread(new ThreadStart(ReaderWriter));
 		ReaderThread.IsBackground=true;
 		ReaderThread.Start();
-		
+		Register();
+		while(true){
+			lock(lockObject){
+				if(Connected==true){
+					break;
+				}
+			}
+			Thread.Sleep(100);
+		}
 	}
-		
+	private void Register(){
+		string nick=User.GetNextNick();
+		IrcMessage mesg;
+		mesg=IrcMessage.GetPassMessage(Network.GetServerPassword());
+		AddToSendQueue(mesg);
+		mesg=IrcMessage.GetNickMessage(nick);
+		AddToSendQueue(mesg);
+		mesg=IrcMessage.GetUserMessage(User);
+		AddToSendQueue(mesg);
+	}
 	private void AddToSendQueue(IrcMessage mesg)
 	{
 		lock(lockObject){
@@ -297,6 +306,9 @@ namespace IrcFx
 			case ServerReplyCode.RPL_WELCOME:
 				string[] data = mesg.Parameters[1].Split(' ');
 				User.CurrentNick=data[data.Length-1].Split('!')[0];
+				lock(lockObject){
+					Connected=true;
+				}
 				break;
 			case ServerReplyCode.RPL_NAMREPLY: 
 				string[] names=mesg.Parameters[3].Split(' ');
@@ -321,6 +333,10 @@ namespace IrcFx
 					Console.WriteLine("prefix is {0}",Support["prefix"]);
 				}
 				Support=Support.Merge(iSpt);
+				break;
+			case ServerReplyCode.ERR_NOTREGISTERED:
+				Console.WriteLine("no registery! fixing...");
+				Register();
 				break;
 			default:
 				//Console.WriteLine(mesg.ToString());
