@@ -16,8 +16,8 @@ namespace Sample
 	{
 		IrcSession mySession;
 		//string channel="##csharp";
-		string channel="##programming";
-		//string channel="##testroom";
+		//string channel="##programming";
+		string channel="##testroom";
 		//string channel="##irc";
 		public static void Main(string[] args)
 		{
@@ -42,7 +42,6 @@ namespace Sample
 				return;
 			}
 			mySession.JoinChannel(channel,null);
-			//IrcMessage test=IrcMessage.GetUserMessage(me);
 			while(true)
 			{
 				string bleh=Console.ReadLine();

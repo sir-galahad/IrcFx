@@ -15,7 +15,7 @@ namespace IrcFx
 	/// </summary>
 	public class IrcUser
 	{
-		public String CurrentNick{get; private set;}
+		public String CurrentNick{get;set;}
 		public String RealName{get; private set;}
 		public String UserName{get; private set;}
 		public String[] NickNames{get;private set;}

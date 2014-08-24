@@ -28,5 +28,6 @@ namespace IrcFx
 		void OnUserQuit(IrcSession s,string[] affectedChannels,IrcUser user,string message);
 		void OnUserNickChanged(IrcSession s,string[] affectdChannels,string oldNick, string newNick);
 		void OnChannelModeChanged(IrcSession s,string channel,IrcUser user, string change);
+		void OnUserModeChanged(IrcSession s,IrcUser user,string change);
 	}
 }

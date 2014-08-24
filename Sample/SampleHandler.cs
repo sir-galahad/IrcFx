@@ -53,11 +53,17 @@ namespace Sample
 		public override void OnUserQuit(IrcSession s,string[] affectedChannels,IrcUser user,string message){
 			Console.WriteLine("{0} quit [{1}]",user.CurrentNick,message);
 		}
+		public override void OnUserNickChanged(IrcSession s,string[] affectdChannels,string oldNick, string newNick){
+			Console.WriteLine("{0} has changed their nick to {1}",oldNick,newNick);
+		}
 		public override void OnUserKicked(IrcSession s,string channel,string kicker,string kickee,string message){
 			Console.WriteLine("{0} kicked by {1} [{2}]",kickee,kicker,message);
 		}
 		public override void OnChannelModeChanged(IrcSession s,string channel,IrcUser user,string message){
 			Console.WriteLine("{0} set mode to {1}",user,message);
+		}
+		public override void OnUserModeChanged(IrcSession s,IrcUser user, string change){
+			Console.WriteLine("User mode set to: [{0}]",change);
 		}
 	}
 }

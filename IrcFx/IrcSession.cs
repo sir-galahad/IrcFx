@@ -15,20 +15,7 @@ using System.Text;
 using System.Threading;
 namespace IrcFx
 {
-	//TODO: fix handling of NICK messages, add a channels variable to the quit handler
-	
-	public delegate void MessageHandler(IrcSession s,IrcUser Sender,string Target,string Text);
-	public delegate void ServerReplyHandler(IrcSession s,short code,string data);
-	public delegate void DisconnectHandler(IrcSession s);
-	public delegate void NamesReceivedHandler(IrcSession s,string channel,IrcNick[] names);
-	public delegate void ChannelJoinedEventHandler(IrcSession s,string channel,IrcUser user);
-	public delegate void ChannelPartedEventHandler(IrcSession s,string channel,IrcUser user, string message);
-	public delegate void UserKicked(IrcSession s,string channel, string kicker,string kickee,string message);
-	public delegate void UserQuitHandler(IrcSession s,string[] affectedChannels,IrcUser user,string message);
-	public delegate void UserNickChangedHandler(IrcSession s,string[] affectdChannels,string oldNick, string newNick);
-	public delegate void ChannelModeChanged(IrcSession s,string channel,IrcUser user, string change);
-	
-	public enum ServerReplyCode { RPL_ISUPPORT=5, RPL_NAMREPLY=353,RPL_ENDOFNAMES=366};
+	public enum ServerReplyCode {RPL_WELCOME=1, RPL_ISUPPORT=5, RPL_NAMREPLY=353,RPL_ENDOFNAMES=366};
 	
 	/// <summary>
 	/// IrcSession is the class responsible for implementing the IRC protocol
@@ -71,18 +58,14 @@ namespace IrcFx
 			this.Connected=Connection.Connected;
 			break;
 		}
-		mesg=IrcMessage.GetNickMessage(User,0);
-		Connection.Send(mesg.GetBytes());
+		
+		StreamReader reader=new StreamReader(new NetworkStream(Connection));
 		mesg=IrcMessage.GetPassMessage(Network.GetServerPassword());
 		Connection.Send(mesg.GetBytes());
-		mesg=IrcMessage.GetNickMessage(User,0);
-		Connection.Send(mesg.GetBytes());
-		mesg=IrcMessage.GetPassMessage(Network.GetServerPassword());
+		mesg=IrcMessage.GetNickMessage(User.NickNames[0]);
 		Connection.Send(mesg.GetBytes());
 		mesg=IrcMessage.GetUserMessage(User);
 		Connection.Send(mesg.GetBytes());
-		
-		//AddToSendQueue(IrcMessage.GetPongMessage());
 		ReaderThread=new Thread(new ThreadStart(ReaderWriter));
 		ReaderThread.IsBackground=true;
 		ReaderThread.Start();
@@ -216,10 +199,13 @@ namespace IrcFx
 				case "NICK":
 					user=new IrcUser(mesg.Prefix);
 					string newuser=mesg.Parameters[0];
-					Console.WriteLine(mesg.Parameters[0]);
+					//Console.WriteLine(mesg.Parameters[0]);
 					string[] affectedChannels=FindChannelsAffectedByNick(user.CurrentNick);
 					foreach(string cName in affectedChannels){
 						channels[cName].ReplaceNick(user.CurrentNick,newuser);
+					}
+					if(user.CurrentNick==User.CurrentNick){
+						User.CurrentNick=newuser;
 					}
 					if(MessageHandler!=null){
 						MessageHandler.OnUserNickChanged(this,affectedChannels,user.CurrentNick,newuser);
@@ -237,24 +223,35 @@ namespace IrcFx
 					break;
 				case "MODE":
 					user=new IrcUser(mesg.Prefix);
+					IrcNick nick=null;
 					if(channelPrefixChars.Contains(new String(new char[]{mesg.Parameters[0][0]}))){
 						channelName=mesg.Parameters[0];
 						StringBuilder sb=new StringBuilder(mesg.Parameters[1]);
 						if(mesg.Parameters.Length>2){
 							sb.Append(' ');
 							sb.Append(mesg.Parameters[2]);
-							IrcNick nick=channels[channelName][mesg.Parameters[2]];
-								bool loseMode=false;
+							if(channels[channelName].ContainsNick(mesg.Parameters[2]))
+								nick=channels[channelName][mesg.Parameters[2]];
+							bool loseMode=false;
 							if(mesg.Parameters[1][0]=='-'){
 								loseMode=true;
 							}
-							nick.ModeChange(mesg.Parameters[1][1],loseMode);
+							if(mesg.Parameters[1][1]=='v' || mesg.Parameters[1][1]=='o')
+								nick.ModeChange(mesg.Parameters[1][1],loseMode);
 						}
 						if(MessageHandler!=null){
 							MessageHandler.OnChannelModeChanged(this,channelName,user,sb.ToString());
 						}
 					}else{
-						Console.WriteLine("*{0}*",mesg.ToString());
+						StringBuilder sb=new StringBuilder();
+						for(int x=1;x<mesg.Parameters.Length;x++){
+							sb.Append(mesg.Parameters[x]);
+							sb.Append(' ');
+						}
+						if(MessageHandler!=null){
+							MessageHandler.OnUserModeChanged(this,user,sb.ToString());
+						}
+						//Console.WriteLine("*{0}*",mesg.ToString());
 					}
 					break;
 				case "QUIT":
@@ -281,9 +278,9 @@ namespace IrcFx
 						message="";
 					}
 					channelName=mesg.Parameters[0];
-					Console.WriteLine("this far");
+					
 					string kickee=mesg.Parameters[1];
-					Console.WriteLine("calling onkicked");
+					this.channels[channelName].RemoveName(kickee);
 					if(MessageHandler!=null){
 						MessageHandler.OnUserKicked(this,channelName,user.CurrentNick,kickee,message);
 					}
@@ -297,6 +294,10 @@ namespace IrcFx
 		{
 		string channel;
 		switch((ServerReplyCode)replyCode){
+			case ServerReplyCode.RPL_WELCOME:
+				string[] data = mesg.Parameters[1].Split(' ');
+				User.CurrentNick=data[data.Length-1].Split('!')[0];
+				break;
 			case ServerReplyCode.RPL_NAMREPLY: 
 				string[] names=mesg.Parameters[3].Split(' ');
 				channel=mesg.Parameters[2];

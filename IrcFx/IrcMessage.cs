@@ -134,10 +134,10 @@ namespace IrcFx
 			args[3]=User.RealName;
 			return new IrcMessage("USER",args);
 		}
-		public static IrcMessage GetNickMessage(IrcUser User,int nicktotry)
+		public static IrcMessage GetNickMessage(string nick)
 		{
 			String[] args=new String[1];
-			args[0]=User.NickNames[nicktotry];
+			args[0]=nick;
 			return new IrcMessage("NICK",args);
 		}
 		

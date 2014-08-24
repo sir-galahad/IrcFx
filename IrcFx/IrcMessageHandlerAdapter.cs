@@ -30,6 +30,6 @@ namespace IrcFx
 		public virtual void OnUserQuit(IrcSession s,string[] affectedChannels,IrcUser user,string message){}
 		public virtual void OnUserNickChanged(IrcSession s,string[] affectdChannels,string oldNick, string newNick){}
 		public virtual void OnChannelModeChanged(IrcSession s,string channel,IrcUser user, string change){}
-		
+		public virtual void OnUserModeChanged(IrcSession s,IrcUser user, string change){}
 	}
 }
