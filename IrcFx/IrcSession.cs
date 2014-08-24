@@ -44,7 +44,6 @@ namespace IrcFx
 
 	public void Connect()
 	{
-		IrcMessage mesg;
 		IPEndPoint ipe;
 		Support=new IrcISupport();
 		//have to fix this  yup yup
@@ -329,13 +328,9 @@ namespace IrcFx
 				break;
 			case ServerReplyCode.RPL_ISUPPORT :
 				IrcISupport iSpt=new IrcISupport(mesg);
-				if(Support["prefix"]!=null){
-					Console.WriteLine("prefix is {0}",Support["prefix"]);
-				}
 				Support=Support.Merge(iSpt);
 				break;
 			case ServerReplyCode.ERR_NOTREGISTERED:
-				Console.WriteLine("no registery! fixing...");
 				Register();
 				break;
 			default:
