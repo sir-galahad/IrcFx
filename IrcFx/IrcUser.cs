@@ -20,15 +20,13 @@ namespace IrcFx
 		public String UserName{get; private set;}
 		public String[] NickNames{get;private set;}
 		int NickNumber=0;
-		public IrcUser(String realName,String userName,String nick1,String nick2,String nick3)
+		public IrcUser(String realName,String userName,params string[] nicks)
 		{
 			RealName=realName;
 			UserName=userName;
 			
 			NickNames=new String[3];
-			NickNames[0]=nick1;
-			NickNames[1]=nick2;
-			NickNames[2]=nick3;
+			NickNames=nicks;
 			CurrentNick=NickNames[0];
 		}
 		public IrcUser(string mesgdata)

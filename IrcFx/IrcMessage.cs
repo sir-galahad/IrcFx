@@ -193,6 +193,22 @@ namespace IrcFx
 			args[0]=quitmesg;
 			return new IrcMessage("QUIT",args);
 		}
+		
+		public static IrcMessage GetUserModeMessage(string nick,string ModesToChange,bool Unset){
+			string[] args;
+			if(ModesToChange==null){
+				args=new string[1];
+				args[0]=nick;
+				return new IrcMessage("MODE",args);
+			}
+			StringBuilder sb=new StringBuilder();
+			sb.Append(Unset?'-':'+');
+			sb.Append(ModesToChange);
+			args=new String[2];
+			args[0]=nick;
+			args[1]=sb.ToString();
+			return new IrcMessage("MODE",args);
+		}
 			
 			
 	}

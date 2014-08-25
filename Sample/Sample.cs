@@ -15,9 +15,9 @@ namespace Sample
 	class Sample
 	{
 		IrcSession mySession;
-		//string channel="##csharp";
+		string channel="##csharp";
 		//string channel="##programming";
-		string channel="##testroom";
+		//string channel="##testroom";
 		//string channel="##irc";
 		public static void Main(string[] args)
 		{
@@ -90,12 +90,19 @@ namespace Sample
 					}
 					mySession.Action(channel,text);
 					break;
+				case "/mode":
+					if(args.Length==1){
+						mySession.SetUserMode(null,false);
+						break;
+					}
+					if(args[1][0]!='+'&&args[1][0]!='-') break;
+					mySession.SetUserMode(args[1].Substring(1),args[1][0]=='-');
+					break;
 				default:
 					if(input[0]=='/'){break;}
-					//if(input[0]==':')
 					mySession.Msg(channel,input);
 					break;
-			}
+			} 
 		}
 	}
 }
