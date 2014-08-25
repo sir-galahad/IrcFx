@@ -19,10 +19,10 @@ namespace IrcFx
 		public String[] Parameters{get; private set;}
 		String Text="";	
 		public String Prefix{get;private set;}
-		public IrcMessage(String Cmd,String[] Params)
+		public IrcMessage(String Cmd,params String[] Args)
 		{
 			Command=Cmd;
-			Parameters=Params;
+			Parameters=Args;
 			Prefix="";
 			int Trailing=0;
 				
@@ -30,7 +30,7 @@ namespace IrcFx
 			//and there can be only one! (one trailing param, as many spaces as you want
 			//the trailing param must be the last one in the list as well
 			Text+=Cmd;
-			foreach(String S in Params)
+			foreach(String S in Args)
 			{
 				if(S==null)continue;
 				if(S.Contains(" ")){
@@ -208,6 +208,18 @@ namespace IrcFx
 			args[0]=nick;
 			args[1]=sb.ToString();
 			return new IrcMessage("MODE",args);
+		}
+		
+		public static IrcMessage GetChannelModeMessage(string channel,string ModesToChange,string ModeData,bool Unset){
+			if(ModesToChange==null){
+				return new IrcMessage("MODE",channel);}
+			StringBuilder sb=new StringBuilder();
+			sb.Append(Unset?'-':'+');
+			sb.Append(ModesToChange);
+			if(ModeData==null)
+				return new IrcMessage("MODE",channel,sb.ToString());
+			else 
+				return new IrcMessage("MODE",channel,sb.ToString(),ModeData);
 		}
 			
 			

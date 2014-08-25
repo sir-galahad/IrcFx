@@ -109,11 +109,18 @@ namespace IrcFx
 			sb.Append('\x01');
 			Msg(target,sb.ToString());
 		}
-	
+		
+		public void SetChannelMode(string channel, string ModesToSet,string ModeData, bool Unset){
+			IrcMessage mesg=IrcMessage.GetChannelModeMessage(channel,ModesToSet,ModeData,Unset);
+			Console.WriteLine(mesg.ToString());
+			AddToSendQueue(mesg);
+		}
+		
 		public void SetUserMode(string ModesToSet,bool Unset){
 			IrcMessage mesg=IrcMessage.GetUserModeMessage(User.CurrentNick,ModesToSet,Unset);
 			AddToSendQueue(mesg);
 		}
+		
 		public void Quit(String quitmesg){
 			AddToSendQueue(IrcMessage.GetQuitMessage(quitmesg));
 			if(Thread.CurrentThread!=ReaderThread){
