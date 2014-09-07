@@ -11,12 +11,10 @@ using System;
 namespace IrcFx
 {
 	/// <summary>
-	/// Description of IrcMessageAdapter.
+	/// An all null but overridable implementation of a IIrcMessageHandler
 	/// </summary>
-	public class IrcMessageHandlerAdapter:IrcMessageHandler
-	{
-		public IrcMessageHandlerAdapter()
-		{
+	public class IrcMessageHandlerAdapter:IrcMessageHandler{
+		public IrcMessageHandlerAdapter(){
 		}
 		
 		public virtual void OnChatMessage(IrcSession s,IrcUser Sender,string Target,string Text){}

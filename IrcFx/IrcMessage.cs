@@ -13,14 +13,13 @@ namespace IrcFx
 	/// <summary>
 	/// Description of Message.
 	/// </summary>
-	public class IrcMessage
-	{
+	public class IrcMessage{
 		public String Command{get;private set;}
 		public String[] Parameters{get; private set;}
 		String Text="";	
 		public String Prefix{get;private set;}
-		public IrcMessage(String Cmd,params String[] Args)
-		{
+		
+		public IrcMessage(String Cmd,params String[] Args){
 			Command=Cmd;
 			Parameters=Args;
 			Prefix="";
@@ -48,8 +47,7 @@ namespace IrcFx
 		}
 		
 		//this constructor is intended to be used on received messages
-		public IrcMessage(String data)
-		{
+		public IrcMessage(String data){
 			int iter=0;
 			int trailing=-1;
 			int paramstart;
@@ -64,8 +62,7 @@ namespace IrcFx
 			Command=Params[iter];
 			iter++;
 			paramstart=iter;
-			while(iter<Params.Length)
-			{
+			while(iter<Params.Length){
 				paramcount++;
 				if(Params[iter]=="")
 				{
@@ -79,9 +76,7 @@ namespace IrcFx
 			}
 			Parameters=new String[paramcount];
 			iter=paramstart;
-			while((iter-paramstart)<paramcount&&iter!=trailing)
-			{
-				
+			while((iter-paramstart)<paramcount&&iter!=trailing){
 				Parameters[iter-paramstart]=Params[iter];
 				iter++;
 			}
@@ -90,8 +85,7 @@ namespace IrcFx
 				iter++;
 				Parameters[iter-paramstart]=Params[trailing].Substring(1);
 				trailing++;
-				while(trailing<Params.Length)
-				{
+				while(trailing<Params.Length){
 					Parameters[iter-paramstart]+=" ";
 					Parameters[iter-paramstart]+=Params[trailing];
 					trailing++;
@@ -102,31 +96,27 @@ namespace IrcFx
 			Parameters[iter-paramstart]=Parameters[iter-paramstart].TrimEnd(end.ToCharArray());
 		}
 		
-		public String GetText()
-		{
+		public String GetText(){
 			return Text;
 		}
 		
-		public override string ToString()
-		{
+		public override string ToString(){
 			return string.Format("[IrcMessage Text={0}]", Text);
 		}
 
-		public byte[] GetBytes()
-		{
+		public byte[] GetBytes(){
 			return Encoding.UTF8.GetBytes(Text);
 		}
 		
 		//a bunch of static methods to create standard irc messages
 		
-		public static IrcMessage GetPassMessage(String Password)
-		{
+		public static IrcMessage GetPassMessage(String Password){
 			String[] args=new String[1];
 			args[0]=Password;
 			return new IrcMessage("PASS",args);
 		}
-		public static IrcMessage GetUserMessage(IrcUser User)
-		{
+		
+		public static IrcMessage GetUserMessage(IrcUser User){
 			String[] args=new String[4];
 			args[0]=User.UserName;
 			args[1]="0";
@@ -134,16 +124,15 @@ namespace IrcFx
 			args[3]=User.RealName;
 			return new IrcMessage("USER",args);
 		}
-		public static IrcMessage GetNickMessage(string nick)
-		{
+		
+		public static IrcMessage GetNickMessage(string nick){
 			String[] args=new String[1];
 			args[0]=nick;
 			return new IrcMessage("NICK",args);
 		}
 		
 		//use null for key if no key is needed
-		public static IrcMessage GetJoinMessage(String Channel,String Key)
-		{
+		public static IrcMessage GetJoinMessage(String Channel,String Key){
 			int argcount=2;
 			if(Key==null)argcount=1;
 			String[] args=new String[argcount];
@@ -151,16 +140,15 @@ namespace IrcFx
 			if(Key!=null)args[1]=Key;
 			return new IrcMessage("JOIN",args);
 		}
-		public static IrcMessage GetPartMessage(String Channel,String PartMessage)
-		{
+		
+		public static IrcMessage GetPartMessage(String Channel,String PartMessage){
 			String[] args=new String[2];
 			args[0]=Channel;
 			args[1]=PartMessage;
 			return new IrcMessage("PART",args);
 		}
-		public static IrcMessage GetMessage(String target,String text)
-			
-		{
+		
+		public static IrcMessage GetMessage(String target,String text){
 			String[] args=new String[2];
 			args[0]=target;
 			//make sure emoticons or other one word strings starting with ':' don't get interpreted wrongly
@@ -171,8 +159,8 @@ namespace IrcFx
 			args[1]=text;
 			return new IrcMessage("PRIVMSG",args);
 		}
-		public static IrcMessage GetPongMessage(string source, string target)
-		{
+		
+		public static IrcMessage GetPongMessage(string source, string target){
 			string[] args;
 			if(source==null||target==null){
 				args=new String[1];
@@ -187,8 +175,8 @@ namespace IrcFx
 				args[currentarg]=":"+target;
 			return new IrcMessage("PONG",args);
 		}
-		public static IrcMessage GetQuitMessage(string quitmesg)
-		{
+		
+		public static IrcMessage GetQuitMessage(string quitmesg){
 			string[] args=new String[1];
 			args[0]=quitmesg;
 			return new IrcMessage("QUIT",args);
@@ -210,7 +198,8 @@ namespace IrcFx
 			return new IrcMessage("MODE",args);
 		}
 		
-		public static IrcMessage GetChannelModeMessage(string channel,string ModesToChange,string ModeData,bool Unset){
+		public static IrcMessage GetChannelModeMessage(string channel,
+		                                               string ModesToChange,string ModeData,bool Unset){
 			if(ModesToChange==null){
 				return new IrcMessage("MODE",channel);}
 			StringBuilder sb=new StringBuilder();
@@ -220,8 +209,6 @@ namespace IrcFx
 				return new IrcMessage("MODE",channel,sb.ToString());
 			else 
 				return new IrcMessage("MODE",channel,sb.ToString(),ModeData);
-		}
-			
-			
+		}	
 	}
 }
