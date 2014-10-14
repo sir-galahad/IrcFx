@@ -10,45 +10,50 @@ using System;
 using IrcFx;
 using System.Threading;
 using System.Collections.Generic;
-namespace Sample
-{
-	class Sample
-	{
+namespace Sample{
+	
+	class Sample{
 		IrcSession mySession;
 		//string channel="##csharp";
-		//string channel="##programming";
-		string channel="##testroom";
+		string channel="##programming";
+		//string channel="##testroom";
 		//string channel="##irc";
-		public static void Main(string[] args)
-		{
+		
+		public static void Main(string[] args){
 			Sample client=new Sample();
 			client.Run();
 		}
 		
-		public void Run(){
-			
+		public void Run(){	
+			//I had been using hardcoded user information in this file but since it's about to go up
+			//on github i've hastily taken that out and put in this ugly Console based transaction
 			Console.WriteLine("Welcome to sIRC");
 			Console.WriteLine("This progam is intended to be an example of how to use IrcFx");
+			Console.WriteLine("What is your user name?");
+			string userName=Console.ReadLine();
+			Console.WriteLine("Enter a list of nicks you would like to use seperated by spaces");
+			string nickNames=Console.ReadLine();
+			Console.WriteLine("Enter your password (this is a really simple program so it will be visible to anyone looking over your shoulder)");
+			string password=Console.ReadLine();
+			
 			IrcNetworkInfo mynet=new IrcNetworkInfo("bleh");
-			mynet.AddServer("irc.freenode.net",6667,"double9");
-			IrcUser me=new IrcUser("Aaron H Davis","gala","bot_sharp","Sir_galahad","bleh");
+			mynet.AddServer("irc.freenode.net",6667,password);
+			IrcUser me=new IrcUser("A. Realname",userName,nickNames.Split(" ".ToCharArray()));
 			mySession=new IrcSession(me,mynet,new SampleHandler());
 			mySession.Connect();
 			if(mySession.Connected==true)
 				Console.WriteLine("Connected");
-			else
-			{
+			else{
 				Console.WriteLine("Connection Failed!!");
 				return;
 			}
 			mySession.JoinChannel(channel,null);
-			while(true)
-			{
+			while(true){
 				string bleh=Console.ReadLine();
 				HandleLocalInput(bleh);
 			}
-			
 		}
+		
 		public void HandleLocalInput(string input){
 			char[] seperator=new Char[1];
 			seperator[0]=' ';

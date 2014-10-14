@@ -15,6 +15,7 @@ namespace IrcFx
 	/// <summary>
 	/// a simple buffered reader, because StreamReader doesn't have a non blocking way to call ReadLine()
 	/// or even a way to check if ReadLine() would block;
+	/// StreamReader.Peek() is viable under .net, but blocks under mono
 	/// </summary>
 	public class BufferedNetworkReader :IDisposable
 	{
@@ -22,10 +23,11 @@ namespace IrcFx
 		byte[] buffer=new byte[1024]; //should be plently as irc message can't be more than 512 bytes
 		int head;
 		UTF8Encoding codec=new UTF8Encoding();
-		public BufferedNetworkReader(NetworkStream stream)
-		{
+		
+		public BufferedNetworkReader(NetworkStream stream){
 			NetStream=stream;
 		}
+		
 		public bool ReadyToRead{
 			get{
 			if(head!=0)return true;
@@ -33,6 +35,7 @@ namespace IrcFx
 			return false;}
 			private set{}
 		}
+		
 		string GetLine(){
 			byte[] temp=new byte[1024];
 			string line=codec.GetString(buffer);
@@ -47,6 +50,7 @@ namespace IrcFx
 			}
 			return null;
 		}
+		
 		public string ReadLine(){
 			int bytesread;	
 			string line=GetLine();
@@ -71,6 +75,7 @@ namespace IrcFx
 				return null;
 			}
 		}
+		
 		public void Dispose(){
 			NetStream.Dispose();
 		}

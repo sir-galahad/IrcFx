@@ -11,7 +11,7 @@ using System.Text;
 namespace IrcFx
 {
 	/// <summary>
-	/// Description of Message.
+	/// an Irc message class to simplify sending irc messages
 	/// </summary>
 	public class IrcMessage{
 		public String Command{get;private set;}

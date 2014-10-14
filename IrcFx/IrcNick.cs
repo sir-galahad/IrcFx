@@ -11,18 +11,18 @@ using System.Text;
 namespace IrcFx
 {
 	/// <summary>
-	/// Description of IrcNick.
+	/// a class to represent an Irc nick
 	/// </summary>
 	public class IrcNick : IComparable<IrcNick>
 	{
 		static char[] legalchars=null;
-		
 		public string Nick{get; private set;}
 		public string FlagCharacters{get;private set;}
 	 	string NickModeCharacters; //modes you would see attached to a nick like @ or +
 	 	string ModesCharacters;//modes as they show up in the MODE command like o or v
 	 	public string CurrentMode{get;private set;}
-		static IrcNick(){
+		
+	 	static IrcNick(){
 			//create our list of legal nick characters
 			legalchars=new Char[(0x7d-0x30)];
 			int offset=0;
@@ -40,14 +40,13 @@ namespace IrcFx
 			}
 			return false;
 		}
-		public IrcNick(String rawNick,IrcISupport support)
-		{
+		
+		public IrcNick(String rawNick,IrcISupport support){
 			//set up supported modes prefix string is in the form of 
 			//"(ov)@+
 			String tmp=support["prefix"]; 
 			tmp=tmp.TrimStart('('); //remove leading open paren leaving "ov)@+"
 			String [] tmps=tmp.Split(')'); //split to "ov" and "@+"
-			
 			ModesCharacters=tmps[0];
 			NickModeCharacters=tmps[1];
 			RawNick=rawNick;
@@ -62,11 +61,12 @@ namespace IrcFx
 			}
 			Nick=rawNick.Substring(x);
 		}
+		
 		public IrcNick(string nick,IrcISupport support,string currentmode):this(nick,support){
 			CurrentMode=currentmode;
 		}
-		public void ModeChange(char modeChar,bool losesMode){
-			
+		
+		public void ModeChange(char modeChar,bool losesMode){	
 			char nickModeChar=NickModeCharacters[ModesCharacters.IndexOf(modeChar)];
 			if(losesMode==true){
 				while(CurrentMode.Contains(new String(new char[]{nickModeChar}))){
@@ -79,6 +79,7 @@ namespace IrcFx
 				CurrentMode=CurrentMode+nickModeChar;
 			}
 		}
+		
 		public string RawNick{
 			get{
 				//char nickMod='\0';//the char that will prefix our nick will go here
@@ -94,13 +95,12 @@ namespace IrcFx
 			}
 			private set{}//raw nick will contain @/+ or any other prefixing chars
 		}
-		public int CompareTo(IrcNick other)
-		{
+		
+		public int CompareTo(IrcNick other){
 			return Nick.CompareTo(other.Nick);
 		}
 		
-		public override string ToString()
-		{
+		public override string ToString(){
 			return string.Format(Nick);
 		}
 

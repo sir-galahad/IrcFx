@@ -11,7 +11,7 @@ using System;
 namespace IrcFx
 {
 	/// <summary>
-	/// Description of User.
+	/// a classs to represent the local user and remote users for messages that give a nick+host
 	/// </summary>
 	public class IrcUser
 	{
