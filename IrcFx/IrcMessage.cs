@@ -150,6 +150,7 @@ namespace IrcFx
 		
 		public static IrcMessage GetMessage(String target,String text){
 			String[] args=new String[2];
+			if(text=="")return null;
 			args[0]=target;
 			//make sure emoticons or other one word strings starting with ':' don't get interpreted wrongly
 			//(IRC uses " :" to denote a multi word string)
