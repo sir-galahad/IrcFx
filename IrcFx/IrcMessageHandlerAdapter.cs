@@ -13,7 +13,9 @@ namespace IrcFx
 	/// <summary>
 	/// An all null but overridable implementation of a IIrcMessageHandler
 	/// </summary>
-	public class IrcMessageHandlerAdapter{
+
+	public class IrcMessageHandlerAdapter:IrcMessageHandler{
+
 		public IrcMessageHandlerAdapter(){
 		}
 		

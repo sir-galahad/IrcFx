@@ -103,7 +103,7 @@ namespace IrcFx
 		public override string ToString(){
 			return string.Format(Nick);
 		}
-	
+
 
 	}
 }

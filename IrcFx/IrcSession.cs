@@ -22,8 +22,13 @@ namespace IrcFx
 	/// </summary>
 	public class IrcSession{
 		public static string channelPrefixChars="#&!+.~";
+<<<<<<< HEAD
 		IrcMessageHandlerAdapter MessageHandler;
 		public Boolean LocalEcho{get;set;}
+=======
+		IrcMessageHandler MessageHandler;
+		public Boolean LocalEcho=true;
+>>>>>>> 0059a3d94d81773fcfdfc1988ecac5f46382df13
 		IrcUser User;
 		IrcNetworkInfo Network;
 		Socket Connection;
@@ -34,12 +39,19 @@ namespace IrcFx
 		public IrcISupport Support{get;private set;}
 		Object lockObject=new Object();
 	
+<<<<<<< HEAD
 		public IrcSession(IrcUser user,IrcNetworkInfo net,IrcMessageHandlerAdapter messageHandler){
+=======
+		public IrcSession(IrcUser user,IrcNetworkInfo net,IrcMessageHandler messageHandler){
+>>>>>>> 0059a3d94d81773fcfdfc1988ecac5f46382df13
 			User=user;
 			Network=net;
 			Connected=false;
 			MessageHandler=messageHandler;
+<<<<<<< HEAD
 			LocalEcho=true;
+=======
+>>>>>>> 0059a3d94d81773fcfdfc1988ecac5f46382df13
 		}
 
 		public void Connect(){
@@ -96,9 +108,10 @@ namespace IrcFx
 		}
 		
 		public void Msg(String target,String Text){
-			//if(text==null)return;
+
 			IrcMessage mesg=IrcMessage.GetMessage(target,Text);
 			if(mesg==null) return;
+
 			AddToSendQueue(mesg);
 			if(LocalEcho==true&&MessageHandler!=null)
 				MessageHandler.OnChatMessage(this,User,mesg.Parameters[0],mesg.Parameters[1]);
