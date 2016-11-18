@@ -199,6 +199,7 @@ namespace IrcFx
 					break;
 				case "PING":
 					mesg=IrcMessage.GetPongMessage(User.UserName,mesg.Parameters[0]);
+					Console.WriteLine("ping {0}",mesg.Command);
 					AddToSendQueue(mesg);
 					break;
 				case "NOTICE":
