@@ -85,8 +85,9 @@ namespace IrcFx
 		}
 	
 		private void AddToSendQueue(IrcMessage mesg){
-			lock(lockObject)
+			lock(lockObject){
 				SendQueue.Enqueue(mesg);
+			}
 		}
 	
 		public void JoinChannel(String Channel,String Key){
@@ -151,6 +152,7 @@ namespace IrcFx
 					if(lineReader.ReadyToRead){
 						string text=null;
 						text=lineReader.ReadLine();
+						if(text==null)continue;
 						mesg=new IrcMessage(text);
 						ReceivedMessage(mesg);
 					}
@@ -162,7 +164,7 @@ namespace IrcFx
 				}
 				Thread.Sleep(25);
 				lock(lockObject){
-					while(SendQueue.Count!=0){
+					while(SendQueue.Count > 0){
 						mesg=SendQueue.Dequeue();
 						try{Connection.Send(mesg.GetBytes());}
 						catch(Exception ex){
@@ -199,7 +201,6 @@ namespace IrcFx
 					break;
 				case "PING":
 					mesg=IrcMessage.GetPongMessage(User.UserName,mesg.Parameters[0]);
-					Console.WriteLine("ping {0}",mesg.Command);
 					AddToSendQueue(mesg);
 					break;
 				case "NOTICE":
